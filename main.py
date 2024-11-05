@@ -6,6 +6,11 @@ from Objeto3D import *
 
 o:Objeto3D
 
+# Variáveis globais para ângulos de rotação
+angulo_x = 0.0
+angulo_y = 0.0
+velocidade_rotacao = 5.0  # Aumente esse valor para ajustar a velocidade
+
 def init():
     global o
     glClearColor(0.5, 0.5, 0.9, 1.0)
@@ -17,7 +22,7 @@ def init():
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     o = Objeto3D()
-    o.LoadFile('dude.obj')
+    o.LoadFile('AK_47.obj')
 
     DefineLuz()
     PosicUser()
@@ -64,7 +69,7 @@ def PosicUser():
 
     # Configura a matriz da projeção perspectiva (FOV, proporção da tela, distância do mínimo antes do clipping, distância máxima antes do clipping
     # https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml
-    gluPerspective(60, 16/9, 0.01, 50)  # Projecao perspectiva
+    gluPerspective(100, 16/9, 0.01, 50)  # Projecao perspectiva
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
@@ -73,7 +78,7 @@ def PosicUser():
     # As três próximas especificam o ponto de foco nos eixos x, y e z
     # As três últimas especificam o vetor up
     # https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluLookAt.xml
-    gluLookAt(-2, 6, -8, 0, 0, 0, 0, 1.0, 0)
+    gluLookAt(-23, 6, -10, 0, 0, 0, 0, 1.0, 0)
 
 def DesenhaLadrilho():
     glColor3f(0.5, 0.5, 0.5)  # desenha QUAD preenchido
@@ -121,33 +126,33 @@ def DesenhaCubo():
 
 def desenha():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
     glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
 
-    DesenhaPiso()
-    #DesenhaCubo()    
+    glTranslatef(0.0, 0.0, -35.0)
+
+    # Aplica as rotações nos ângulos X e Y acumulados
+    glRotatef(angulo_x, 1.0, 0.0, 0.0)
+    glRotatef(angulo_y, 0.0, 1.0, 0.0)
+
     o.Desenha()
     o.DesenhaWireframe()
-    o.DesenhaVertices()
+    # o.DesenhaVertices()
 
     glutSwapBuffers()
     pass
 
 def teclado(key, x, y):
-
+    global angulo_x, angulo_y
+    
     if key == b'w' or key == b'W':
-        o.rotation[0] += 0.5#(1, 0, 0, o.rotation[3] + 2)
-
-    if key == b's' or key == b'S':
-        o.rotation[0] -= 0.5 #(1, 0, 0, o.rotation[3] - 2)
-
-    if key == b'a' or key == b'A':
-        o.rotation[1] -= 0.5 #(0, 1, 0, o.rotation[3] - 2)
-
-    if key == b'd' or key == b'D':
-        o.rotation[1] += 0.5 #(0, 1, 0, o.rotation[3] + 2)
-
-    o.rotation[3] = 1 - (o.rotation[0] + o.rotation[1] + o.rotation[2])
+        angulo_x += velocidade_rotacao  # Rotação positiva no eixo X
+    elif key == b's' or key == b'S':
+        angulo_x -= velocidade_rotacao  # Rotação negativa no eixo X
+    elif key == b'a' or key == b'A':
+        angulo_y -= velocidade_rotacao  # Rotação negativa no eixo Y
+    elif key == b'd' or key == b'D':
+        angulo_y += velocidade_rotacao  # Rotação positiva no eixo Y
 
     glutPostRedisplay()
     pass
