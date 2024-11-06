@@ -137,7 +137,7 @@ def desenha():
 
     o.Desenha()
     o.DesenhaWireframe()
-    o.DesenhaVertices()
+    #o.DesenhaVertices()
 
     glutSwapBuffers()
     pass
