@@ -86,5 +86,35 @@ class Objeto3D:
         
         glPopMatrix()
         pass
+    
+    def MorphTo(self, other, t):
+        morph_vertices = []
+        morph_faces = []
+
+        # Número de vértices a considerar no morphing
+        max_vertices = max(len(self.vertices), len(other.vertices))
+        max_faces = max(len(self.faces), len(other.faces))
+
+        for i in range(max_vertices):
+            v1 = self.vertices[i % len(self.vertices)] #resto para voltar pro inicio
+            v2 = other.vertices[i % len(other.vertices)]
+
+            # Interpolação dos vértices
+            x = (1 - t) * v1.x + t * v2.x
+            y = (1 - t) * v1.y + t * v2.y
+            z = (1 - t) * v1.z + t * v2.z
+            morph_vertices.append(Ponto(x, y, z))
+
+        for i in range(max_faces):
+            f = self.faces[i % len(self.faces)] #resto para voltar pro inicio
+
+            # usa as faces do primeiro objeto
+            morph_faces.append(f)
+
+        # Retorna um novo objeto 3D com os vértices interpolados
+        morphed_object = Objeto3D()
+        morphed_object.vertices = morph_vertices
+        morphed_object.faces = morph_faces
+        return morphed_object
 
 

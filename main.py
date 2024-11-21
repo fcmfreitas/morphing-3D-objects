@@ -4,15 +4,18 @@ from OpenGL.GL import *
 
 from Objeto3D import *
 
-o:Objeto3D
+o1:Objeto3D
 
 # Variáveis globais para ângulos de rotação
 angulo_x = 0.0
 angulo_y = 0.0
 velocidade_rotacao = 5.0  # Aumente esse valor para ajustar a velocidade
+morph_t = 0.0
+morphing = False
+morphed_object = None
 
 def init():
-    global o
+    global o1, o2
     glClearColor(0.5, 0.5, 0.9, 1.0)
     glClearDepth(1.0)
 
@@ -21,8 +24,11 @@ def init():
     glEnable(GL_CULL_FACE)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
-    o = Objeto3D()
-    o.LoadFile('AK_47.obj')
+    o1 = Objeto3D()
+    o1.LoadFile('AK_47.obj')
+
+    o2 = Objeto3D()
+    o2.LoadFile('kar98.obj')
 
     DefineLuz()
     PosicUser()
@@ -135,27 +141,62 @@ def desenha():
     glRotatef(angulo_x, 1.0, 0.0, 0.0)
     glRotatef(angulo_y, 0.0, 1.0, 0.0)
 
-    o.Desenha()
-    o.DesenhaWireframe()
+    if morphing:
+        if morphed_object:  # Desenha o objeto morfando
+            morphed_object.Desenha()
+            #morphed_object.DesenhaWireframe()
+    else:
+        # Quando o morphing terminar, desenhe apenas o `o2`
+        if not morphed_object: # Desenha o objeto original inicialmente
+            o1.Desenha()
+            o1.DesenhaWireframe()  
+        else: # Após o morphing, desenhe o objeto final (o2)
+            o2.Desenha()
+            o2.DesenhaWireframe()  
+
     #o.DesenhaVertices()
 
     glutSwapBuffers()
     pass
 
 def teclado(key, x, y):
-    global angulo_x, angulo_y
+    global angulo_x, angulo_y, morphing
     
     if key == b'w' or key == b'W':
-        angulo_x += velocidade_rotacao  # Rotação positiva no eixo X
+        angulo_x += velocidade_rotacao  #eixo X
     elif key == b's' or key == b'S':
-        angulo_x -= velocidade_rotacao  # Rotação negativa no eixo X
+        angulo_x -= velocidade_rotacao  #eixo X
     elif key == b'a' or key == b'A':
-        angulo_y -= velocidade_rotacao  # Rotação negativa no eixo Y
+        angulo_y -= velocidade_rotacao  #eixo Y
     elif key == b'd' or key == b'D':
-        angulo_y += velocidade_rotacao  # Rotação positiva no eixo Y
+        angulo_y += velocidade_rotacao  #eixo Y
+    elif key == b'm' or key == b'M':
+        if not morphing:    # M para morfar
+            morphing = True
+            morph_t = 0.0
+            morphed_object = o1 
+            glutTimerFunc(30, atualiza_morph, 0)
 
     glutPostRedisplay()
     pass
+
+def atualiza_morph(value):
+    global morph_t, morphing, morphed_object, o1, o2
+
+    if morphing:
+        morph_t += 0.05  # Incrementa o estado do morph
+        if morph_t > 1.0:
+            morph_t = 1.0
+            morphing = False  # Finaliza o morphing
+            morphed_object = None
+
+        # Gera o objeto intermediário
+        morphed_object = o1.MorphTo(o2, morph_t)
+        glutPostRedisplay()
+
+        if morphing:
+            glutTimerFunc(30, atualiza_morph, 0)
+
 
 def main():
 
