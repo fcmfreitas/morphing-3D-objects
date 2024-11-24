@@ -14,6 +14,10 @@ morph_t = 0.0
 morphing = False
 morphed_object = None
 
+window_o1 = None
+window_o2 = None
+window_morph = None
+
 def init():
     global o1, o2
     glClearColor(0.5, 0.5, 0.9, 1.0)
@@ -130,6 +134,32 @@ def DesenhaCubo():
     glutSolidCone(1, 1, 4, 4)
     glPopMatrix()
 
+def desenha_o1():
+    """Desenha o objeto `o1`."""
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    glTranslatef(0.0, 0.0, -35.0)
+
+    glRotatef(-20, 1.0, 0.0, 0.0) 
+    glRotatef(90, 0.0, 1.0, 0.0)
+    o1.Desenha()
+    o1.DesenhaWireframe()
+    glutSwapBuffers()
+
+
+def desenha_o2():
+    """Desenha o objeto `o2`."""
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    glTranslatef(0.0, 0.0, -35.0)
+
+    glRotatef(-35, 1.0, 0.0, 0.0) 
+    
+    o2.Desenha()
+    o2.DesenhaWireframe()
+    glutSwapBuffers()
+
+
 def desenha():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
@@ -137,10 +167,11 @@ def desenha():
 
     glTranslatef(0.0, 0.0, -35.0)
 
+
     # Aplica as rotações nos ângulos X e Y acumulados
     glRotatef(angulo_x, 1.0, 0.0, 0.0)
     glRotatef(angulo_y, 0.0, 1.0, 0.0)
-
+    
     if morphing:
         if morphed_object:  # Desenha o objeto morfando
             morphed_object.Desenha()
@@ -158,6 +189,7 @@ def desenha():
 
     glutSwapBuffers()
     pass
+
 
 def teclado(key, x, y):
     global angulo_x, angulo_y, morphing
@@ -199,28 +231,30 @@ def atualiza_morph(value):
 
 
 def main():
+    global window_o1, window_o2, window_morph
 
     glutInit(sys.argv)
-
-    # Define o modelo de operacao da GLUT
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH)
-
-    # Especifica o tamnho inicial em pixels da janela GLUT
     glutInitWindowSize(640, 480)
 
-    # Especifica a posição de início da janela
-    glutInitWindowPosition(100, 100)
-
-    # Cria a janela passando o título da mesma como argumento
-    glutCreateWindow('Computacao Grafica - 3D')
-
-    # Função responsável por fazer as inicializações
+    # Janela para o1
+    window_o1 = glutCreateWindow('Objeto 1')
     init()
+    glutDisplayFunc(desenha_o1)
 
-    # Registra a funcao callback de redesenho da janela de visualizacao
+    # Janela para o2
+    glutInitWindowSize(640, 480)
+    glutInitWindowPosition(660, 100)
+    window_o2 = glutCreateWindow('Objeto 2')
+    init()
+    glutDisplayFunc(desenha_o2)
+
+    # Janela para o morph
+    glutInitWindowSize(640, 480)
+    glutInitWindowPosition(100, 600)
+    window_morph = glutCreateWindow('Morphing')
+    init()
     glutDisplayFunc(desenha)
-
-    # Registra a funcao callback para tratamento das teclas ASCII
     glutKeyboardFunc(teclado)
 
     try:
