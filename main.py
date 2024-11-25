@@ -29,10 +29,11 @@ def init():
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     o1 = Objeto3D()
-    o1.LoadFile('AK_47.obj')
+    o1.LoadFile('robo.obj')
+    o1.Scale(0.08)
 
     o2 = Objeto3D()
-    o2.LoadFile('kar98.obj')
+    o2.LoadFile('truck.obj')
 
     DefineLuz()
     PosicUser()
@@ -79,7 +80,7 @@ def PosicUser():
 
     # Configura a matriz da projeção perspectiva (FOV, proporção da tela, distância do mínimo antes do clipping, distância máxima antes do clipping
     # https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml
-    gluPerspective(100, 16/9, 0.01, 50)  # Projecao perspectiva
+    gluPerspective(26, 16/9, 0.01, 50)  # Projecao perspectiva
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
@@ -138,10 +139,10 @@ def desenha_o1():
     """Desenha o objeto `o1`."""
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
-    glTranslatef(0.0, 0.0, -35.0)
+    glTranslatef(0.0, -7.0, -35.0)
 
-    glRotatef(-20, 1.0, 0.0, 0.0) 
-    glRotatef(90, 0.0, 1.0, 0.0)
+    glRotatef(10, 0.0, 1.0, 0.0) 
+    
     o1.Desenha()
     o1.DesenhaWireframe()
     glutSwapBuffers()
@@ -151,9 +152,9 @@ def desenha_o2():
     """Desenha o objeto `o2`."""
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
-    glTranslatef(0.0, 0.0, -35.0)
+    glTranslatef(0.0, -5.0, -35.0)
 
-    glRotatef(-35, 1.0, 0.0, 0.0) 
+    glRotatef(33, 0.0, 1.0, 0.0) 
     
     o2.Desenha()
     o2.DesenhaWireframe()
@@ -164,28 +165,17 @@ def desenha():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-
-    glTranslatef(0.0, 0.0, -35.0)
+    morphed_object = o1.morphed_object
+    glTranslatef(0.0, -7.0, -35.0)
 
 
     # Aplica as rotações nos ângulos X e Y acumulados
     glRotatef(angulo_x, 1.0, 0.0, 0.0)
     glRotatef(angulo_y, 0.0, 1.0, 0.0)
     
-    if morphing:
-        if morphed_object:  # Desenha o objeto morfando
-            morphed_object.Desenha()
-            #morphed_object.DesenhaWireframe()
-    else:
-        # Quando o morphing terminar, desenhe apenas o `o2`
-        if not morphed_object: # Desenha o objeto original inicialmente
-            o1.Desenha()
-            o1.DesenhaWireframe()  
-        else: # Após o morphing, desenhe o objeto final (o2)
-            o2.Desenha()
-            o2.DesenhaWireframe()  
-
-    #o.DesenhaVertices()
+    morphed_object.Desenha() 
+    #morphed_object.DesenhaVertices() 
+    morphed_object.DesenhaWireframe() 
 
     glutSwapBuffers()
     pass
@@ -223,7 +213,8 @@ def atualiza_morph(value):
             morphed_object = None
 
         # Gera o objeto intermediário
-        morphed_object = o1.MorphTo(o2, morph_t)
+        o1.MorphTo(o2, morph_t)
+        morphed_object = o1.morphed_object
         glutPostRedisplay()
 
         if morphing:

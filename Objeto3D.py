@@ -10,6 +10,7 @@ class Objeto3D:
         self.faces = []
         self.position = Ponto(0,0,0)
         self.rotation = [0,0,0,1]
+        self.morphed_object = self
         pass
 
     def LoadFile(self, file:str):
@@ -37,6 +38,12 @@ class Objeto3D:
                 
             # ignoramos outros tipos de items, no exercício não é necessário e vai só complicar mais
         pass
+
+    def Scale(self, scale_factor):
+        for v in self.vertices:
+            v.x *= scale_factor
+            v.y *= scale_factor
+            v.z *= scale_factor
 
     def DesenhaVertices(self):
         glPushMatrix()
@@ -106,15 +113,13 @@ class Objeto3D:
             morph_vertices.append(Ponto(x, y, z))
 
         for i in range(max_faces):
-            f = self.faces[i % len(self.faces)] #resto para voltar pro inicio
+            f = other.faces[i % len(other.faces)] #resto para voltar pro inicio
 
             # usa as faces do primeiro objeto
             morph_faces.append(f)
 
         # Retorna um novo objeto 3D com os vértices interpolados
-        morphed_object = Objeto3D()
-        morphed_object.vertices = morph_vertices
-        morphed_object.faces = morph_faces
-        return morphed_object
-
+        self.morphed_object = Objeto3D()
+        self.morphed_object.vertices = morph_vertices
+        self.morphed_object.faces = morph_faces
 
