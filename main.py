@@ -218,7 +218,7 @@ def atualiza_morph(value):
         glutPostRedisplay()
 
         if morphing:
-            glutTimerFunc(30, atualiza_morph, 0)
+            glutTimerFunc(40, atualiza_morph, 0)
 
 
 def main():

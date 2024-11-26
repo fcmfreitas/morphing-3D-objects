@@ -113,10 +113,18 @@ class Objeto3D:
             morph_vertices.append(Ponto(x, y, z))
 
         for i in range(max_faces):
-            f = other.faces[i % len(other.faces)] #resto para voltar pro inicio
+            f1 = self.faces[i % len(self.faces)]
+            f2 = other.faces[i % len(other.faces)]
 
-            # usa as faces do primeiro objeto
-            morph_faces.append(f)
+            # Interpolação das faces
+            interpolated_face = []
+            for j in range(len(f2)):
+                v1_index = f1[j % len(f1)]
+                v2_index = f2[j % len(f2)]
+                interpolated_index = int((1 - t) * v1_index + t * v2_index)
+                interpolated_face.append(interpolated_index)
+
+            morph_faces.append(interpolated_face)
 
         # Retorna um novo objeto 3D com os vértices interpolados
         self.morphed_object = Objeto3D()
