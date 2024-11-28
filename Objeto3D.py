@@ -113,48 +113,25 @@ class Objeto3D:
         return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2)
     
     def ordenar_faces_por_distancia(self, other):
-        # Calcula os centróides das faces de ambos os objetos
         centroides_self = [self.calcular_centroid(face) for face in self.faces]
         centroides_other = [other.calcular_centroid(face) for face in other.faces]
 
-        # Cria uma lista de tuplas (distância, índice_self, índice_other) para cada face de self em relação a cada face de other
-        distancias = []
+        usadas_other = set() # quais faces de other já foram usadas
+        faces_ordenadas = []
+
         for i, centroide_self in enumerate(centroides_self):
-            for j, centroide_other in enumerate(centroides_other):
-                distancia = self.distancia(centroide_self, centroide_other)
-                distancias.append((distancia, i, j))
+            distancias_face = [
+                (self.distancia(centroide_self, centroide_other), j)
+                for j, centroide_other in enumerate(centroides_other)
+                if j not in usadas_other
+            ]
 
-        # Ordena as distâncias
-        distancias.sort()
-
-        # Ordena as faces de self de acordo com a menor distância para cada face de other, sem repetições
-        faces_ordenadas = [None] * len(centroides_other)  # Ajusta o tamanho para o número de faces de other
-        usados_self = set()
-        usados_other = set()
-
-        for distancia, i, j in distancias:
-            if j < len(faces_ordenadas) and faces_ordenadas[j] is None and i not in usados_self:
-                faces_ordenadas[j] = self.faces[i]
-                usados_self.add(i)
-                usados_other.add(j)
-
-        # Preenche as faces restantes que não foram atribuídas
-        for i in range(len(faces_ordenadas)):
-            if faces_ordenadas[i] is None:
-                for k in range(len(self.faces)):
-                    if k not in usados_self:
-                        faces_ordenadas[i] = self.faces[k]
-                        usados_self.add(k)
-                        break
-
-        # Repete as primeiras faces se necessário para garantir que não haja None
-        index = 0
-        for i in range(len(faces_ordenadas)):
-            if faces_ordenadas[i] is None:
-                faces_ordenadas[i] = faces_ordenadas[index]
-                index += 1
-                if index >= len(faces_ordenadas):
-                    index = 0
+            # Se ainda houver opções, escolha a face mais próxima
+            if distancias_face:
+                distancias_face.sort()
+                _, melhor_indice = distancias_face[0]
+                usadas_other.add(melhor_indice)
+                faces_ordenadas.append(self.faces[i])
 
         return faces_ordenadas
 

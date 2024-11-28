@@ -33,7 +33,7 @@ def init():
     #o1.Scale(0.08)
 
     o2 = Objeto3D()
-    o2.LoadFile('easy2.obj')
+    o2.LoadFile('hard3.obj')
 
     DefineLuz()
     PosicUser()
