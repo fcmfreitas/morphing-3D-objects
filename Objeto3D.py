@@ -112,7 +112,56 @@ class Objeto3D:
     def distancia(self, p1, p2):
         return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2)
     
+    def ordenar_faces_por_distancia(self, other):
+        # Calcula os centróides das faces de ambos os objetos
+        centroides_self = [self.calcular_centroid(face) for face in self.faces]
+        centroides_other = [other.calcular_centroid(face) for face in other.faces]
+
+        # Cria uma lista de tuplas (distância, índice_self, índice_other) para cada face de self em relação a cada face de other
+        distancias = []
+        for i, centroide_self in enumerate(centroides_self):
+            for j, centroide_other in enumerate(centroides_other):
+                distancia = self.distancia(centroide_self, centroide_other)
+                distancias.append((distancia, i, j))
+
+        # Ordena as distâncias
+        distancias.sort()
+
+        # Ordena as faces de self de acordo com a menor distância para cada face de other, sem repetições
+        faces_ordenadas = [None] * len(centroides_other)  # Ajusta o tamanho para o número de faces de other
+        usados_self = set()
+        usados_other = set()
+
+        for distancia, i, j in distancias:
+            if j < len(faces_ordenadas) and faces_ordenadas[j] is None and i not in usados_self:
+                faces_ordenadas[j] = self.faces[i]
+                usados_self.add(i)
+                usados_other.add(j)
+
+        # Preenche as faces restantes que não foram atribuídas
+        for i in range(len(faces_ordenadas)):
+            if faces_ordenadas[i] is None:
+                for k in range(len(self.faces)):
+                    if k not in usados_self:
+                        faces_ordenadas[i] = self.faces[k]
+                        usados_self.add(k)
+                        break
+
+        # Repete as primeiras faces se necessário para garantir que não haja None
+        index = 0
+        for i in range(len(faces_ordenadas)):
+            if faces_ordenadas[i] is None:
+                faces_ordenadas[i] = faces_ordenadas[index]
+                index += 1
+                if index >= len(faces_ordenadas):
+                    index = 0
+
+        return faces_ordenadas
+
     def MorphTo(self, other, t):
+        if t <= 0.05:
+            self.faces = self.ordenar_faces_por_distancia(other)
+
         morph_vertices = []
         morph_faces = []
 
