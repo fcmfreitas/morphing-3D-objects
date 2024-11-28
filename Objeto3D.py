@@ -11,6 +11,8 @@ class Objeto3D:
         self.position = Ponto(0,0,0)
         self.rotation = [0,0,0,1]
         self.morphed_object = self
+        self.face_associations_self = []
+        self.face_associations_other = []
         pass
 
     def LoadFile(self, file:str):
@@ -93,41 +95,73 @@ class Objeto3D:
         
         glPopMatrix()
         pass
+
+    def calcular_centroid(self, face):
+        
+        v0 = self.vertices[face[0]]
+        v1 = self.vertices[face[1]]
+        v2 = self.vertices[face[2]]
+        
+        # Centróide de um triângulo
+        cx = (v0.x + v1.x + v2.x) / 3
+        cy = (v0.y + v1.y + v2.y) / 3
+        cz = (v0.z + v1.z + v2.z) / 3
+        
+        return Ponto(cx, cy, cz)
+    
+    def distancia(self, p1, p2):
+        return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2)
     
     def MorphTo(self, other, t):
         morph_vertices = []
         morph_faces = []
 
-        # Número de vértices a considerar no morphing
-        max_vertices = max(len(self.vertices), len(other.vertices))
+        # Verifica qual objeto tem mais faces e faz o balanceamento
         max_faces = max(len(self.faces), len(other.faces))
 
-        for i in range(max_vertices):
-            v1 = self.vertices[i % len(self.vertices)] #resto para voltar pro inicio
-            v2 = other.vertices[i % len(other.vertices)]
-
-            # Interpolação dos vértices
-            x = (1 - t) * v1.x + t * v2.x
-            y = (1 - t) * v1.y + t * v2.y
-            z = (1 - t) * v1.z + t * v2.z
-            morph_vertices.append(Ponto(x, y, z))
+        # Cria listas de faces associadas para ambos os objetos
+        face_associations_self = []
+        face_associations_other = []
 
         for i in range(max_faces):
-            f1 = self.faces[i % len(self.faces)]
-            f2 = other.faces[i % len(other.faces)]
+            face_self = self.faces[i % len(self.faces)]  # Repete faces se necessário
+            face_other = other.faces[i % len(other.faces)]  # Repete faces se necessário
+            face_associations_self.append(face_self)
+            face_associations_other.append(face_other)
 
-            # Interpolação das faces
-            interpolated_face = []
-            for j in range(len(f2)):
-                v1_index = f1[j % len(f1)]
-                v2_index = f2[j % len(f2)]
-                interpolated_index = int((1 - t) * v1_index + t * v2_index)
-                interpolated_face.append(interpolated_index)
+        # Interpola vértices e faces
+        for i in range(len(face_associations_self)):
+            face_self = face_associations_self[i]
+            face_other = face_associations_other[i]
 
-            morph_faces.append(interpolated_face)
+            # Ajusta o número de vértices das faces para corresponder
+            max_vertices = max(len(face_self), len(face_other))
 
-        # Retorna um novo objeto 3D com os vértices interpolados
+            # Expande ou repete vértices de face_self e face_other
+            adjusted_face_self = [face_self[j % len(face_self)] for j in range(max_vertices)]
+            adjusted_face_other = [face_other[j % len(face_other)] for j in range(max_vertices)]
+
+            # Cria uma nova face morfada com vértices interpolados
+            morph_face = []
+            for j in range(max_vertices):
+                # Obtém os vértices correspondentes
+                v_self = self.vertices[adjusted_face_self[j]]
+                v_other = other.vertices[adjusted_face_other[j]]
+
+                # Interpola os vértices
+                x = v_self.x * (1 - t) + v_other.x * t
+                y = v_self.y * (1 - t) + v_other.y * t
+                z = v_self.z * (1 - t) + v_other.z * t
+                morph_vertex = Ponto(x, y, z)
+
+                # Adiciona o vértice morfado na lista de vértices
+                morph_vertices.append(morph_vertex)
+                morph_face.append(len(morph_vertices) - 1)
+
+            # Adiciona a nova face morfada
+            morph_faces.append(morph_face)
+
+        # Atualiza o objeto morfado
         self.morphed_object = Objeto3D()
         self.morphed_object.vertices = morph_vertices
         self.morphed_object.faces = morph_faces
-
