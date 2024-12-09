@@ -29,11 +29,11 @@ def init():
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     o1 = Objeto3D()
-    o1.LoadFile('easy3.obj')
-    #o1.Scale(0.08)
+    o1.LoadFile('robo.obj')
+    o1.Scale(0.08)
 
     o2 = Objeto3D()
-    o2.LoadFile('hard3.obj')
+    o2.LoadFile('truck.obj')
 
     DefineLuz()
     PosicUser()

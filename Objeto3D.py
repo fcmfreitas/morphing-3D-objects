@@ -96,48 +96,7 @@ class Objeto3D:
         glPopMatrix()
         pass
 
-    def calcular_centroid(self, face):
-        
-        v0 = self.vertices[face[0]]
-        v1 = self.vertices[face[1]]
-        v2 = self.vertices[face[2]]
-        
-        # Centróide de um triângulo
-        cx = (v0.x + v1.x + v2.x) / 3
-        cy = (v0.y + v1.y + v2.y) / 3
-        cz = (v0.z + v1.z + v2.z) / 3
-        
-        return Ponto(cx, cy, cz)
-    
-    def distancia(self, p1, p2):
-        return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2 + (p1.z - p2.z)**2)
-    
-    def ordenar_faces_por_distancia(self, other):
-        centroides_self = [self.calcular_centroid(face) for face in self.faces]
-        centroides_other = [other.calcular_centroid(face) for face in other.faces]
-
-        usadas_other = set() # quais faces de other já foram usadas
-        faces_ordenadas = []
-
-        for i, centroide_self in enumerate(centroides_self):
-            distancias_face = [
-                (self.distancia(centroide_self, centroide_other), j)
-                for j, centroide_other in enumerate(centroides_other)
-                if j not in usadas_other
-            ]
-
-            # Se ainda houver opções, escolha a face mais próxima
-            if distancias_face:
-                distancias_face.sort()
-                _, melhor_indice = distancias_face[0]
-                usadas_other.add(melhor_indice)
-                faces_ordenadas.append(self.faces[i])
-
-        return faces_ordenadas
-
     def MorphTo(self, other, t):
-        if t <= 0.05:
-            self.faces = self.ordenar_faces_por_distancia(other)
 
         morph_vertices = []
         morph_faces = []
